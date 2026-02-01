@@ -113,7 +113,6 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     }
 
     const { metadataUri } = await response.json();
-    console.log("Metadata uploaded:", metadataUri);
     return metadataUri;
   };
 
@@ -146,9 +145,7 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
       throw new Error(err.error || "Failed to build transaction");
     }
 
-    const { serializedTx } = await response.json();
-    console.log("Transaction built, size:", serializedTx.length);
-    
+    const { serializedTx } = await response.json();    
     return { mintKeypair, serializedTx };
   };
 
@@ -170,7 +167,6 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
 
     // Request wallet signature
     const signedTx = await signTransaction(transaction);
-    console.log("Transaction signed by wallet");
 
     // Send and confirm transaction
     setStep("confirming");
@@ -180,7 +176,6 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
       preflightCommitment: "confirmed",
     });
 
-    console.log("Transaction sent:", txSignature);
 
     // Wait for confirmation with timeout
     try {
@@ -194,7 +189,6 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
       console.warn("Confirmation check failed, verifying signature...", confirmError);
       const status = await connection.getSignatureStatus(txSignature);
       if (status.value?.confirmationStatus === "confirmed" || status.value?.confirmationStatus === "finalized") {
-        console.log("Transaction confirmed via status check");
       } else if (status.value?.err) {
         throw new Error(`Transaction failed: ${JSON.stringify(status.value.err)}`);
       } else {
@@ -202,7 +196,6 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
       }
     }
 
-    console.log("Transaction confirmed!");
     return txSignature;
   };
 
@@ -229,10 +222,8 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
 
       const result = await response.json();
       
-      console.log("Moltbook registration result:", result);
 
       if (result.success && result.api_key) {
-        console.log("Moltbook agent registered successfully!");
         return {
           moltbookApiKey: result.api_key,
           moltbookClaimUrl: result.claim_url,
@@ -313,7 +304,6 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     }
 
     const { launch } = await response.json();
-    console.log("Launch saved:", launch.id);
     return launch as Launch;
   };
 
