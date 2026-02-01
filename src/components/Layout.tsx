@@ -4,6 +4,7 @@ import { WalletConnection } from "./WalletConnection";
 import { Button } from "@/components/ui/button";
 import { LeftSidebar } from "./LeftSidebar";
 import { Rocket, Menu, X } from "lucide-react";
+import { CopyButton } from "@/components/CopyButton";
 import logoSvg from "@/assets/logo.svg";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +61,45 @@ export const Layout = ({ children }: Props) => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-3">
+              {/* CA Token Display - Desktop Only */}
+              {import.meta.env.VITE_CA_TOKEN && (
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 border border-border/50">
+                  <span className="text-xs text-muted-foreground">CA:</span>
+                  <code className="text-xs font-mono text-foreground max-w-[120px] truncate">
+                    {import.meta.env.VITE_CA_TOKEN}
+                  </code>
+                  <CopyButton 
+                    value={import.meta.env.VITE_CA_TOKEN} 
+                    label="CA Token"
+                    size="icon"
+                    className="h-5 w-5"
+                  />
+                </div>
+              )}
+
+              {/* Social Links - Desktop Only */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className="h-12 w-12"
+                >
+                  <a
+                    href="https://twitter.com/moltpump1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Twitter"
+                  >
+                    <img 
+                      src="https://www.freepnglogos.com/x-logo-png-twitter-0.jpg" 
+                      alt="Twitter" 
+                      className="h-8 w-8 object-contain"
+                    />
+                  </a>
+                </Button>
+              </div>
+
               {/* Mobile Menu Toggle */}
               <Button
                 variant="ghost"
@@ -88,6 +128,22 @@ export const Layout = ({ children }: Props) => {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-background">
             <div className="px-4 py-4 space-y-2">
+              {/* CA Token - Mobile */}
+              {import.meta.env.VITE_CA_TOKEN && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50 mb-2">
+                  <span className="text-xs text-muted-foreground">CA:</span>
+                  <code className="text-xs font-mono text-foreground flex-1 truncate">
+                    {import.meta.env.VITE_CA_TOKEN}
+                  </code>
+                  <CopyButton 
+                    value={import.meta.env.VITE_CA_TOKEN} 
+                    label="CA Token"
+                    size="icon"
+                    className="h-5 w-5 shrink-0"
+                  />
+                </div>
+              )}
+              
               <Button asChild variant="ghost" className="w-full justify-start">
                 <Link to="/home" onClick={() => setMobileMenuOpen(false)}>Home</Link>
               </Button>

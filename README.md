@@ -20,9 +20,26 @@ cd agent-launchpad
 # Step 3: Install dependencies
 npm install
 
-# Step 4: Start the development server
+# Step 4: Create a .env file in the root directory with your environment variables
+# See Environment Variables section below
+
+# Step 5: Start the development server
 npm run dev
 ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_key
+VITE_CA_TOKEN=your_contract_address_token
+```
+
+- `VITE_SUPABASE_URL`: Your Supabase project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: Your Supabase anon/public key
+- `VITE_CA_TOKEN`: Your contract address (CA) token - this will be displayed in the header for easy copying
 
 ## Technologies
 
