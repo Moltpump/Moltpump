@@ -180,7 +180,7 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     return { mintKeypair, serializedTx };
   };
 
-  // Sign and send transaction
+  // Sign and send transaction (Phantom-safe multi-signer flow)
   const signAndSendTransaction = async (): Promise<string> => {
     setStep("awaiting_signature");
     const ctx = contextRef.current;
@@ -193,17 +193,35 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const txBytes = Uint8Array.from(atob(ctx.serializedTx), (c) => c.charCodeAt(0));
     const transaction = VersionedTransaction.deserialize(txBytes);
 
-    // Partial sign with mint keypair
-    transaction.sign([ctx.mintKeypair]);
+    // Step 1: Simulate transaction first with sigVerify: false (Phantom recommendation)
+    try {
+      const simulation = await connection.simulateTransaction(transaction, {
+        sigVerify: false,
+        replaceRecentBlockhash: true,
+      });
+      
+      if (simulation.value.err) {
+        throw new Error(`Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`);
+      }
+      console.log("Transaction simulation successful");
+    } catch (simError) {
+      console.error("Simulation error:", simError);
+      throw new Error(`Transaction simulation failed: ${simError instanceof Error ? simError.message : "Unknown error"}`);
+    }
 
-    // Request wallet signature
-    const signedTx = await signTransaction(transaction);
+    // Step 2: Request wallet signature FIRST (before adding mint signature)
+    // This prevents Phantom from showing the scary red modal
+    const walletSignedTx = await signTransaction(transaction);
     console.log("Transaction signed by wallet");
 
-    // Send and confirm transaction
+    // Step 3: Add mint signature locally after wallet signature
+    walletSignedTx.sign([ctx.mintKeypair]);
+    console.log("Mint signature added locally");
+
+    // Step 4: Send and confirm transaction
     setStep("confirming");
 
-    const txSignature = await connection.sendRawTransaction(signedTx.serialize(), {
+    const txSignature = await connection.sendRawTransaction(walletSignedTx.serialize(), {
       skipPreflight: false,
       preflightCommitment: "confirmed",
     });
