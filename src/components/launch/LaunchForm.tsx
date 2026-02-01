@@ -47,7 +47,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
         {/* Required Fields */}
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Rocket className="h-5 w-5 text-primary" />
               Agent + Token Details
             </CardTitle>
@@ -63,7 +63,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                     <FormControl>
                       <Input
                         placeholder="e.g., CryptoBot"
-                        className="input-focus"
+                        className="bg-secondary border-border"
                         maxLength={32}
                         {...field}
                       />
@@ -82,7 +82,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                     <FormControl>
                       <Input
                         placeholder="e.g., CryptoBot Token"
-                        className="input-focus"
+                        className="bg-secondary border-border"
                         maxLength={32}
                         {...field}
                       />
@@ -103,7 +103,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Input
                       placeholder="e.g., CBOT"
-                      className="bg-secondary/50 border-border uppercase input-focus"
+                      className="bg-secondary border-border uppercase"
                       maxLength={10}
                       {...field}
                       onChange={(e) =>
@@ -128,7 +128,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Textarea
                       placeholder="Describe your token for Pump.fun..."
-                      className="min-h-[80px] bg-secondary/50 border-border resize-none input-focus"
+                      className="min-h-[80px] bg-secondary border-border resize-none"
                       maxLength={1000}
                       {...field}
                     />
@@ -151,7 +151,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Input
                       placeholder='One-line bio for Moltbook - e.g. "The #1 agent of $MOLT"'
-                      className="input-focus"
+                      className="bg-secondary border-border"
                       maxLength={120}
                       {...field}
                     />
@@ -185,7 +185,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Textarea
                       placeholder="Describe your agent's personality, traits, and how it should interact..."
-                      className="min-h-[120px] bg-secondary/50 border-border resize-none input-focus"
+                      className="min-h-[120px] bg-secondary border-border resize-none"
                       maxLength={500}
                       {...field}
                     />
@@ -230,7 +230,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger className="bg-secondary/50 border-border input-focus">
+                            <SelectTrigger className="bg-secondary border-border">
                               <SelectValue placeholder="Select frequency" />
                             </SelectTrigger>
                           </FormControl>
@@ -257,7 +257,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                         <FormControl>
                           <Input
                             placeholder="e.g., crypto, memes, tech..."
-                            className="input-focus"
+                            className="bg-secondary border-border"
                             {...field}
                           />
                         </FormControl>
@@ -317,7 +317,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
         {/* Dev Buy Amount */}
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Coins className="h-5 w-5 text-primary" />
               Initial Buy (Optional)
             </CardTitle>
@@ -340,7 +340,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                           type="text"
                           inputMode="decimal"
                           placeholder="0"
-                          className="bg-secondary/50 border-border pr-14 input-focus"
+                          className="bg-secondary border-border pr-14"
                           value={inputValue}
                           onChange={(e) => {
                             // Allow typing freely - accept digits, dots, and commas
@@ -382,7 +382,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
         {/* Optional Links */}
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Globe className="h-5 w-5 text-primary" />
               Social Links (Optional)
             </CardTitle>
@@ -400,7 +400,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Input
                       placeholder="https://yourproject.com"
-                      className="input-focus"
+                      className="bg-secondary border-border"
                       {...field}
                     />
                   </FormControl>
@@ -420,7 +420,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Input
                       placeholder="https://x.com/yourproject"
-                      className="input-focus"
+                      className="bg-secondary border-border"
                       {...field}
                     />
                   </FormControl>
@@ -441,7 +441,7 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
                   <FormControl>
                     <Input
                       placeholder="https://t.me/yourproject"
-                      className="input-focus"
+                      className="bg-secondary border-border"
                       {...field}
                     />
                   </FormControl>
@@ -457,11 +457,11 @@ export const LaunchForm: FC<Props> = ({ form, onSubmit, isLoading }) => {
           <Button
             type="submit"
             size="lg"
-            className="w-full gap-2 btn-primary-glow text-primary-foreground font-bold text-lg py-7"
+            className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             disabled={isLoading}
           >
             <Rocket className="h-5 w-5" />
-            {isLoading ? "Launching..." : "Launch Agent + Token"}
+            {isLoading ? "Launching..." : "Launch"}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             Non-custodial — you sign with your wallet. No seed phrases.

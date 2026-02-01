@@ -36,11 +36,19 @@ serve(async (req) => {
     
     const symbol = validateTokenSymbol(formData.get("symbol"));
     
-    const description = validateString(formData.get("description"), "description", { 
-      required: true, 
-      minLength: 1, 
-      maxLength: 1000 
-    });
+    // Handle description - if empty, use default based on name and symbol
+    const descriptionRaw = formData.get("description");
+    let description: string;
+    if (descriptionRaw && String(descriptionRaw).trim()) {
+      const validated = validateString(descriptionRaw, "description", { 
+        required: false, 
+        minLength: 1, 
+        maxLength: 1000 
+      });
+      description = validated || `${name} (${symbol}) token`;
+    } else {
+      description = `${name} (${symbol}) token`;
+    }
     
     const twitter = validateUrl(formData.get("twitter"), "twitter");
     const telegram = validateUrl(formData.get("telegram"), "telegram");
@@ -68,7 +76,7 @@ serve(async (req) => {
     
     pumpFormData.append("name", name!);
     pumpFormData.append("symbol", symbol);
-    pumpFormData.append("description", description!);
+    pumpFormData.append("description", description);
     
     if (twitter) pumpFormData.append("twitter", twitter);
     if (telegram) pumpFormData.append("telegram", telegram);

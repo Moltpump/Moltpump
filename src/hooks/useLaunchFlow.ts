@@ -5,7 +5,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { LaunchFormData, LaunchStep, Launch } from "@/types/launch";
 import { toast } from "sonner";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ssjwutbafblpnutzlrzg.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+
+// Helper to get Supabase headers
+const getSupabaseHeaders = async (includeContentType: boolean = true): Promise<HeadersInit> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: HeadersInit = {
+    'apikey': SUPABASE_PUBLISHABLE_KEY,
+  };
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+  if (includeContentType) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return headers;
+};
 
 // Steps that can be retried
 type RetryableStep = "uploading_metadata" | "building_tx" | "awaiting_signature" | "confirming" | "registering_agent";
@@ -97,13 +113,24 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     }
     metadataFormData.append("name", ctx.formData.tokenName);
     metadataFormData.append("symbol", ctx.formData.tokenSymbol);
-    metadataFormData.append("description", ctx.formData.tokenDescription);
+    // Always send description - server will use default if empty
+    metadataFormData.append("description", ctx.formData.tokenDescription || `${ctx.formData.tokenName} (${ctx.formData.tokenSymbol}) token`);
     if (ctx.formData.xUrl) metadataFormData.append("twitter", ctx.formData.xUrl);
     if (ctx.formData.telegramUrl) metadataFormData.append("telegram", ctx.formData.telegramUrl);
     if (ctx.formData.websiteUrl) metadataFormData.append("website", ctx.formData.websiteUrl);
 
+    // For FormData, don't set Content-Type - browser will set it with boundary
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: HeadersInit = {
+      'apikey': SUPABASE_PUBLISHABLE_KEY,
+    };
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/pump-metadata`, {
       method: "POST",
+      headers,
       body: metadataFormData,
     });
 
@@ -128,9 +155,10 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const mintKeypair = Keypair.generate();
     const mintPublicKey = mintKeypair.publicKey.toBase58();
 
+    const headers = await getSupabaseHeaders(true);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/pump-create-tx`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         publicKey: publicKey.toBase58(),
         mintPublicKey,
@@ -218,9 +246,10 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const ctx = contextRef.current;
 
     try {
+      const headers = await getSupabaseHeaders(true);
       const response = await fetch(`${SUPABASE_URL}/functions/v1/moltbook-register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           agentName: ctx.formData.agentName,
           description: ctx.formData.moltbookBio, // Use moltbookBio for Moltbook profile
@@ -280,9 +309,10 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const launchStatus = moltbookData.success ? "agent_registered" : "failed_partial";
     const mintPublicKey = ctx.mintKeypair.publicKey.toBase58();
 
+    const headers = await getSupabaseHeaders(true);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/launch-finalize`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         creatorWallet: publicKey.toBase58(),
         agentName: ctx.formData.agentName,
@@ -464,9 +494,10 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
 
       if (moltbookResult.success) {
         // Update the launch record
+        const headers = await getSupabaseHeaders(true);
         const response = await fetch(`${SUPABASE_URL}/functions/v1/launch-finalize`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             launchId: launchResult.id,
             creatorWallet: launchResult.creator_wallet,
