@@ -5,23 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LaunchFormData, LaunchStep, Launch } from "@/types/launch";
 import { toast } from "sonner";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ssjwutbafblpnutzlrzg.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-
-// Helper to get Supabase headers
-const getSupabaseHeaders = async (includeContentType: boolean = true): Promise<HeadersInit> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const headers: HeadersInit = {
-    'apikey': SUPABASE_PUBLISHABLE_KEY,
-  };
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
-  }
-  if (includeContentType) {
-    headers['Content-Type'] = 'application/json';
-  }
-  return headers;
-};
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 // Steps that can be retried
 type RetryableStep = "uploading_metadata" | "building_tx" | "awaiting_signature" | "confirming" | "registering_agent";
@@ -113,24 +97,13 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     }
     metadataFormData.append("name", ctx.formData.tokenName);
     metadataFormData.append("symbol", ctx.formData.tokenSymbol);
-    // Always send description - server will use default if empty
-    metadataFormData.append("description", ctx.formData.tokenDescription || `${ctx.formData.tokenName} (${ctx.formData.tokenSymbol}) token`);
+    metadataFormData.append("description", ctx.formData.tokenDescription);
     if (ctx.formData.xUrl) metadataFormData.append("twitter", ctx.formData.xUrl);
     if (ctx.formData.telegramUrl) metadataFormData.append("telegram", ctx.formData.telegramUrl);
     if (ctx.formData.websiteUrl) metadataFormData.append("website", ctx.formData.websiteUrl);
 
-    // For FormData, don't set Content-Type - browser will set it with boundary
-    const { data: { session } } = await supabase.auth.getSession();
-    const headers: HeadersInit = {
-      'apikey': SUPABASE_PUBLISHABLE_KEY,
-    };
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
-    }
-
     const response = await fetch(`${SUPABASE_URL}/functions/v1/pump-metadata`, {
       method: "POST",
-      headers,
       body: metadataFormData,
     });
 
@@ -155,10 +128,9 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const mintKeypair = Keypair.generate();
     const mintPublicKey = mintKeypair.publicKey.toBase58();
 
-    const headers = await getSupabaseHeaders(true);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/pump-create-tx`, {
       method: "POST",
-      headers,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         publicKey: publicKey.toBase58(),
         mintPublicKey,
@@ -180,7 +152,7 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     return { mintKeypair, serializedTx };
   };
 
-  // Sign and send transaction (Phantom-safe multi-signer flow)
+  // Sign and send transaction
   const signAndSendTransaction = async (): Promise<string> => {
     setStep("awaiting_signature");
     const ctx = contextRef.current;
@@ -193,35 +165,17 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const txBytes = Uint8Array.from(atob(ctx.serializedTx), (c) => c.charCodeAt(0));
     const transaction = VersionedTransaction.deserialize(txBytes);
 
-    // Step 1: Simulate transaction first with sigVerify: false (Phantom recommendation)
-    try {
-      const simulation = await connection.simulateTransaction(transaction, {
-        sigVerify: false,
-        replaceRecentBlockhash: true,
-      });
-      
-      if (simulation.value.err) {
-        throw new Error(`Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`);
-      }
-      console.log("Transaction simulation successful");
-    } catch (simError) {
-      console.error("Simulation error:", simError);
-      throw new Error(`Transaction simulation failed: ${simError instanceof Error ? simError.message : "Unknown error"}`);
-    }
+    // Partial sign with mint keypair
+    transaction.sign([ctx.mintKeypair]);
 
-    // Step 2: Request wallet signature FIRST (before adding mint signature)
-    // This prevents Phantom from showing the scary red modal
-    const walletSignedTx = await signTransaction(transaction);
+    // Request wallet signature
+    const signedTx = await signTransaction(transaction);
     console.log("Transaction signed by wallet");
 
-    // Step 3: Add mint signature locally after wallet signature
-    walletSignedTx.sign([ctx.mintKeypair]);
-    console.log("Mint signature added locally");
-
-    // Step 4: Send and confirm transaction
+    // Send and confirm transaction
     setStep("confirming");
 
-    const txSignature = await connection.sendRawTransaction(walletSignedTx.serialize(), {
+    const txSignature = await connection.sendRawTransaction(signedTx.serialize(), {
       skipPreflight: false,
       preflightCommitment: "confirmed",
     });
@@ -264,10 +218,9 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const ctx = contextRef.current;
 
     try {
-      const headers = await getSupabaseHeaders(true);
       const response = await fetch(`${SUPABASE_URL}/functions/v1/moltbook-register`, {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           agentName: ctx.formData.agentName,
           description: ctx.formData.moltbookBio, // Use moltbookBio for Moltbook profile
@@ -327,10 +280,9 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
     const launchStatus = moltbookData.success ? "agent_registered" : "failed_partial";
     const mintPublicKey = ctx.mintKeypair.publicKey.toBase58();
 
-    const headers = await getSupabaseHeaders(true);
     const response = await fetch(`${SUPABASE_URL}/functions/v1/launch-finalize`, {
       method: "POST",
-      headers,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         creatorWallet: publicKey.toBase58(),
         agentName: ctx.formData.agentName,
@@ -512,10 +464,9 @@ export const useLaunchFlow = (): UseLaunchFlowResult => {
 
       if (moltbookResult.success) {
         // Update the launch record
-        const headers = await getSupabaseHeaders(true);
         const response = await fetch(`${SUPABASE_URL}/functions/v1/launch-finalize`, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             launchId: launchResult.id,
             creatorWallet: launchResult.creator_wallet,

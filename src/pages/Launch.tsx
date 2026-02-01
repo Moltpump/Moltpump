@@ -43,6 +43,7 @@ const formSchema = z.object({
   devBuyAmountSol: z.number().min(0, "Cannot be negative").max(85, "Max 85 SOL"),
 });
 
+
 const LaunchPage: FC = () => {
   const { connected, publicKey } = useWallet();
   const { connection } = useConnection();
