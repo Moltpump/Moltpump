@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Moltpump Design System - Dark Theme with Coral Brand */
+/* Based on the Moltpump logo coral/red (#FF4B4B) */
+
+@layer base {
+  :root {
+    /* Pump.fun style - Very dark background (almost black) */
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Moltpump coral/red brand color - bright and vibrant like pump.fun's green */
+    --primary: 0 100% 65%;
+    --primary-foreground: 0 0% 3%;
+
+    /* Muted dark surfaces - darker like pump.fun */
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
+
+    /* Lighter coral accent */
+    --accent: 0 100% 71%;
+    --accent-foreground: 0 0% 3%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 0 100% 65%;
+
+    --radius: 0.5rem;
+
+    /* Success green */
+    --success: 142 76% 55%;
+    --success-foreground: 220 20% 4%;
+
+    /* Warning amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 20% 4%;
+
+    /* Sidebar variables for dark theme */
+    --sidebar-background: 220 18% 6%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 0 100% 65%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 220 14% 14%;
+    --sidebar-accent-foreground: 210 40% 90%;
+    --sidebar-border: 220 14% 18%;
+    --sidebar-ring: 0 100% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
+
+@layer components {
+  /* Gradient text utility */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] bg-clip-text text-transparent;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 200% center; }
+  }
+
+  /* Glass card effect */
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  /* Enhanced glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.2), 0 0 40px hsl(var(--primary) / 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .glow-primary:hover {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.15);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.2), 0 0 40px hsl(var(--accent) / 0.1);
+  }
+
+  /* Enhanced card hover effect */
+  .card-hover {
+    @apply transition-all duration-300;
+    @apply hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10;
+    @apply hover:-translate-y-1;
+  }
+
+  /* Pump.fun style buttons - bold and prominent */
+  .btn-primary-glow {
+    @apply relative;
+    @apply bg-primary text-primary-foreground;
+    @apply font-bold;
+    @apply transition-all duration-200;
+    @apply hover:bg-primary/90;
+    @apply active:scale-[0.98];
+  }
+
+  .btn-primary-glow:hover {
+    @apply brightness-110;
+  }
+
+  /* Input focus enhancement - Pump.fun style */
+  .input-focus {
+    @apply transition-colors duration-200;
+    @apply focus:border-primary;
+  }
+
+  /* Gradient background utility */
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+
+  /* Pulse animation for active elements */
+  .pulse-primary {
+    animation: pulse-primary 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-primary {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
+    }
+  }
+
+  /* Solana wallet adapter overrides for dark theme */
+  .wallet-adapter-button {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 !important;
+  }
+
+  .wallet-adapter-modal-wrapper {
+    @apply bg-card border border-border !important;
+  }
+
+  .wallet-adapter-modal-title {
+    @apply text-foreground !important;
+  }
+}

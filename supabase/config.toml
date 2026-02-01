@@ -1,0 +1,13 @@
+project_id = "ssjwutbafblpnutzlrzg"
+
+[functions.pump-metadata]
+verify_jwt = false
+
+[functions.pump-create-tx]
+verify_jwt = false
+
+[functions.moltbook-register]
+verify_jwt = false
+
+[functions.launch-finalize]
+verify_jwt = false
